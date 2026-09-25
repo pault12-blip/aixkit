@@ -5,37 +5,34 @@ use warnings;
 my $BASE = "/u2/aixkit/ROMAK";
 chdir $BASE or die "Can't chdir to $BASE: $!";
 
-my $kill = shift || 0;
-my $CMDS = "/usr/bin/python3 app.py";
+my $restart = shift || 0;
+my $CMD = "/usr/bin/python3 $BASE/app.py";
 my $PORT = 7000;
 
-# Check if the port is being listened on
-my $port_listening = `ss -ltnp | grep ':$PORT'`;
+my $port = `ss -ltnp | grep ':$PORT\\b'`;
+chomp $port;
 
-chomp $port_listening;
-if ( !$port_listening ) {
-    $kill = 1;    # force kill & restart if port not listening
-}
+my ($pid) = $port =~ /pid=(\d+)/;
 
-my @commands = grep { $_ !~ /^\s*$/ } split /\n/, $CMDS;
-foreach my $cmd (@commands) {
-    my $escaped_cmd = quotemeta($cmd);
-    next if $cmd =~ m/#/;
-    my $is_running = `pgrep -f '^$escaped_cmd\$'`;
+if ($pid) {
+    my $cmdline = `ps -p $pid -o args=`;
+    chomp $cmdline;
 
-    if ($is_running) {
-        if ($kill) {
-            print "killing $cmd\n";
-            system("pkill -f '^$escaped_cmd\$'");
-            print "starting $cmd\n";
-            system("nohup $cmd &");
-        } else {
-            print "$cmd - running\n";
+    if ($cmdline eq $CMD) {
+        if (!$restart) {
+            print "RUNNING OK PID $pid\n";
+            exit;
         }
+
+        print "RESTARTING PID $pid\n";
+        kill 'TERM', $pid;
+        sleep 1;
     } else {
-        unless ($kill) {
-            print "starting $cmd\n";
-            system("nohup $cmd &");
-        }
+        print "PORT $PORT OCCUPIED BY PID $pid\n";
+        system("ps -fp $pid");
+        exit 1;
     }
 }
+
+print "STARTING\n";
+system("nohup $CMD >/dev/null 2>&1 &");
