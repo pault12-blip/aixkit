@@ -1,11 +1,19 @@
 # aixkit
- ax kit with an I
 
-# ROMAK
- ROMAK is map/reduce for LLMs.
- One day of coding.
+**ax kit with an I**
 
-# LINKPOT
- LINKPOT is a prompt -> responce sitting in Windows system tray.
- 4 hours of coding.
+## ROMAK
+
+ROMAK is map/reduce for LLMs.
+
+*One day of coding.*
+
+![ROMAK](ROMAK/romak.png)
+
+## LINKPOT
+
+LINKPOT is a prompt → response sitting in Windows system tray.
+
+*4 hours of coding.*
+
 
